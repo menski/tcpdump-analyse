@@ -1,0 +1,127 @@
+
+\section{Konfigurationen}
+\label{sec:konfigurationen}
+
+\lstinputlisting[caption={Konfiguration von nginx auf ib6},label={lst:nginx}]{listings/nginx.conf}
+
+\lstinputlisting[caption={Limits von ib5 und ib6 (ulimit)},label={lst:ulimit}]{listings/ulimit.conf}
+\clearpage
+\lstinputlisting[caption={Konfiguration der Netzwerkkarten von ib5 und ib6 (ethtool)},label={lst:ethtool}]{listings/ethtool.conf}
+
+\clearpage
+\section{Messskript}
+\label{sec:messskript}
+
+\lstinputlisting[caption={Skript zum Automatisieren der Messungen},label={lst:bench-auto},language=bash,numbers=left]{listings/bench-auto.sh}
+
+\clearpage
+\section{Messwerte}
+\label{sec:messwerte}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 119903581 & 399653,93 & - & - & - \\\hline
+      2 & 120376044 & 401229,17 & - & - & - \\\hline
+      3 & 120268758 & 400880,73 & - & - & - \\\hline
+      4 & 119940796 & 399784,83 & - & - & - \\\hline
+      5 & 120069354 & 400217,48 & - & - & - \\\hline
+      6 & 119927287 & 399735,63 & - & - & - \\\hline
+      7 & 120273002 & 400894,69 & - & - & - \\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{no}}\label{tab:messwerte-no}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 93839932 & 312735,33 & 97637565 & 8000042 & 8,194~\%\\\hline
+      2 & 94485540 & 314891,25 & 98306066 & 8334649 & 8,478~\%\\\hline
+      3 & 93728797 & 312360,77 & 97520639 & 7030017 & 7,209~\%\\\hline
+      4 & 93412256 & 311292,88 & 97190374 & 7446903 & 7,662~\%\\\hline
+      5 & 92544907 & 308420,4 & 96289568 & 7288170 & 7,569~\%\\\hline
+      6 & 94540226 & 315071,23 & 98364247 & 8474911 & 8,616~\%\\\hline
+      7 & 93161788 & 310471,57 & 96933477 & 6717941 & 6,930~\%\\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{default}}\label{tab:messwerte-default}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 93361461 & 311133,8 & 97139116 & 1638937 & 1,687~\%\\\hline
+      2 & 94297388 & 314260,2 & 98111218 & 1142023 & 1,164~\%\\\hline
+      3 & 93455367 & 311449,63 & 97234642 & 2256178 & 2,320~\%\\\hline
+      4 & 94018148 & 313314,12 & 97820731 & 1224453 & 1,252~\%\\\hline
+      5 & 94144165 & 313743,49 & 97952561 & 1806995 & 1,845~\%\\\hline
+      6 & 94576465 & 315186,97 & 98400914 & 1634344 & 1,661~\%\\\hline
+      7 & 94243027 & 314073,82 & 98053289 & 1608101 & 1,640~\%\\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{snaplen}}\label{tab:messwerte-snaplen}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 94479121 & 314868,26 & 98301445 & 3138511 & 3,193~\%\\\hline
+      2 & 93174474 & 310509,97 & 96945422 & 1464062 & 1,510~\%\\\hline
+      3 & 94197335 & 313920,03 & 98005865 & 1860171 & 1,898~\%\\\hline
+      4 & 94523845 & 315006,2 & 98346962 & 2196551 & 2,233~\%\\\hline
+      5 & 94215312 & 313968,29 & 98025862 & 1768006 & 1,804~\%\\\hline
+      6 & 93714952 & 312318,19 & 97506245 & 1445038 & 1,482~\%\\\hline
+      7 & 93451164 & 311448,09 & 97232458 & 2033839 & 2,092~\%\\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{buffer}}\label{tab:messwerte-buffer}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 93514281 & 311646,27 & 97298231 & 102277 & 0,105~\%\\\hline
+      2 & 94436463 & 314707,05 & 98255678 & 142459 & 0,145~\%\\\hline
+      3 & 93635020 & 312040,81 & 97422724 & 460590 & 0,473~\%\\\hline
+      4 & 93659731 & 312103,79 & 97448350 & 14219 & 0,015~\%\\\hline
+      5 & 94041647 & 313395,65 & 97844574 & 279299 & 0,285~\%\\\hline
+      6 & 93608679 & 311969,3 & 97396242 & 330139 & 0,339~\%\\\hline
+      7 & 92847251 & 309425,47 & 96604390 & 0 & 0,000~\%\\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{snaplen+buffer}}\label{tab:messwerte-snaplen-buffer}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \bgroup
+  \def\arraystretch{1.2}
+  \begin{tabular}{crrrrr}
+      & \textbf{Requests} & \textbf{Requests/s} & \textbf{Filtered} & \textbf{Dropped} & \textbf{Dropped \%} \\\hline\hline
+      1 & 93881869 & 312874,77 & 93883778 & 4893 & 0,005~\%\\\hline
+      2 & 93082658 & 310188,31 & 93084571 & 3613 & 0,004~\%\\\hline
+      3 & 94126289 & 313676,56 & 94128018 & 20014 & 0,021~\%\\\hline
+      4 & 94240703 & 314049 & 94242269 & 2534 & 0,003~\%\\\hline
+      5 & 92784745 & 309215,6 & 92786720 & 0 & 0,000~\%\\\hline
+      6 & 94166541 & 313826,58 & 94168634 & 23905 & 0,025~\%\\\hline
+      7 & 94220654 & 314003,73 & 94222585 & 2806 & 0,003~\%\\\hline
+  \end{tabular}
+  \egroup
+  \caption{Messwerte für das Szenario \texttt{filter}}\label{tab:messwerte-filter}
+\end{table}

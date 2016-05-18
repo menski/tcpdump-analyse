@@ -1,0 +1,31 @@
+\section{Zusammenfassung}
+\label{sec:zusammenfassung}
+
+In dieser Arbeit wurde untersucht, wie tcpdump/libpcap Netzwerkpakete filtert
+und aufzeichnet. Dazu wurde zu erst gezeigt, wie ein TCP Paket durch den Linux
+Netzwerkstack verarbeitet wird. Dabei wurden die möglichen Ursachen für den
+Paketverlust von tcpdump erklärt. Anschließend wurde ein Messkonzept erstellt,
+um die Auswirkung dieser Punkte zu untersuchen. Die daraus resultierenden
+Messungen bestätigten die Erwartung, dass diese Parameter entscheidend für die
+Anzahl der verlorenen Pakete sind.
+
+Es zeigte sich das es sehr wahrscheinlich zu Paketverlusten kommen kann, wenn
+tcpdump zum Aufzeichnen von sehr hohem Netzwerkverkehr genutzt werden soll.
+Allerdings kann diese Problem durch gezielte Auswahl der tcpdump Einstellungen
+reduziert werden. Wie spezifisch die Einstellungen gewählt werden können hängt
+vom jeweiligen Use Case ab. So konnte für den hier diskutierten Einsatzzweck,
+der HTTP Lastverteilung, sehr spezifische Einstellungen vorgenommen werden.
+Soll jedoch zum Beispiel der komplette TCP Verkehr von mehreren Anwendungen
+aufgezeichnet werden, zum Beispiel für Intrusion Detection, dann muss ein recht
+grober Filter gewählt werden und ein großer Teil des Paketes aufgezeichnet
+werden.
+
+Zusammenfassend konnte gezeigt werden, dass tcpdump zum Aufzeichnen von HTTP
+Requests genutzt werden kann, sofern die Einstellungen auf diesen speziellen
+Einsatzzweck optimiert werden. Außerdem sollte tcpdump nicht parallel auf dem
+System betrieben wird, welches unter Last steht, da es einen Einfluss auf die
+Leistung des Systems hat. Daher wäre es zu empfehlen das tcpdump Monitoring auf
+einem dedizierten System durchzuführen. Dies ist auch deshalb zu empfehlen,
+weil eine Weiterverarbeitung der tcpdump Aufzeichnung nötig ist, welche in
+dieser Arbeit nicht betrachtet wurde.
+

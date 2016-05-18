@@ -1,0 +1,48 @@
+\usepackage[absolute]{textpos}
+
+\newlength{\TitleLeft}
+\newlength{\TitleRight}
+\newlength{\TitleAbove}
+\newlength{\TitleWidth}
+
+\setlength{\TitleLeft}{2cm}
+\setlength{\TitleRight}{2cm}
+\setlength{\TitleAbove}{2cm}
+\setlength{\TitleWidth}{\paperwidth-\TitleLeft-\TitleRight}
+
+\newcommand{\BAUni}{Universität~Potsdam}
+\newcommand{\BAInstitut}{Mathematisch-Naturwissenschaftliche~Fakultät\\Institut~für~Informatik}
+\newcommand{\BABetreuerText}{Betreuer}
+\newcommand{\BAAutor}{Sebastian~Menski (734272)\\menski@uni-potsdam.de}
+\newcommand{\BATyp}{Projektarbeit}
+\newcommand{\BAAbschlussText}{}
+\newcommand{\BAAbschluss}{}
+\newcommand{\BATitle}{tcpdump Analyse}
+\newcommand{\BABetreuer}{Dipl.-Inf. Simon Kiertscher}
+\newcommand{\BAOrt}{Potsdam}
+\newcommand{\BAAbgabedatum}{16. Mai 2016}
+
+\definecolor{uniblue}{rgb}{0.062745,0.17647,0.34118}
+
+\renewcommand{\maketitle}{
+  \thispagestyle{empty}
+  \begin{textblock*}{\TitleWidth}(\TitleLeft,\TitleAbove)
+    ~\hfill\includegraphics[height=2.5cm]{images/uni-logo}\\[3mm]
+    {\color{uniblue}\rule{\TitleWidth}{1mm}}\\[5mm]
+    {
+      \centering
+      \sffamily\Large
+      {\LARGE\BAUni}\\[0.5\baselineskip]
+      {\large\BAInstitut}\\[4\baselineskip]
+      {\BATyp}\\[\baselineskip]
+      {\Huge\BATitle}\\[6\baselineskip]
+
+      \BAAutor\\[7\baselineskip]
+      \begin{tabular}{rl}
+         \BABetreuerText: & \BABetreuer
+      \end{tabular}\\[3\baselineskip]
+      \BAOrt, \BAAbgabedatum\par
+    }
+  \end{textblock*}
+  ~\clearpage
+}

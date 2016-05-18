@@ -1,0 +1,150 @@
+\section{Grundlagen}
+\label{sec:grundlagen}
+
+Tcpdump\footnote{\url{http://www.tcpdump.org/}} ist eine Software um
+Netzwerkpakete aufzuzeichnen. Tcpdump benutzt die Bibliothek libpcap, welche
+eine einheitliche API anbieten um Netzwerkpakete auf unterschiedlichen
+Betriebssystemen aus dem Netzwerkverkehr herauszufiltern. Ziel hierbei ist es
+Paket möglichst früh im Netzwerkstack zu filtern, wodurch nur Pakete
+von Interesse weiterverarbeitet werden müssen.
+
+Diese Kapitel beschreibt wie tcpdump/libpcap in Linux Netzwerkpakete filtert.
+Dazu wird wie in
+\cite{Insolvibile:2001:KKL,Insolvibile:2002:KKIa,Insolvibile:2002:KKIb}
+beschrieben der Verlauf eines eingehenden TCP Paketes durch den Linux Kernel
+betrachtet.
+
+
+\begin{figure} \centering
+\includegraphics[width=.7\textwidth]{images/network-stack.eps}
+\caption{Schematischer Paketfluss beim Empfang eines TCP Paketes im Linux
+Kernel}\label{fig:network-stack}
+\end{figure}
+
+In Abbildung~\ref{fig:network-stack} sind die wichtigsten Teile des Linux
+Networkstacks dargestellt, welche bei dem Empfang eines TCP Paketes eine Rolle
+spielen. Im Userspace wird ein Webserver (nginx) betrieben, welcher über einen
+TCP Socket HTTP Requests empfängt. Parallel läuft tcpdump/libpcap welches einen
+speziellen \texttt{PF\_PACKET} Socket nutzt um alle empfangen Pakete zu
+untersuchen (siehe Listing~\ref{lst:pfpacket}).
+
+\begin{lstlisting}[caption={Erzeugen eines \texttt{PF\_PACKET} Sockets},label=lst:pfpacket]
+socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+\end{lstlisting}
+
+
+Ein solcher Socket ermöglicht es Pakete direkt von der Netzwerkkarte zu
+erhalten ohne das die Pakete den normalen Netzwerkstack durchlaufen, dies ist
+wichtig für tcpdump da es das komplette Paket aufzeichnen will.
+
+Erreicht ein TCP Paket die Netzwerkkarte wird es zuerst in eine Queue in der
+Netzwerkkarte (1) abgespeichert. Anschließend wird das Paket in die zuständige
+CPU Eingangsqueue übergeben (2). Danach übernimmt die Kernel Funktion
+\texttt{net\_rx\_action} die Weitergabe des Paketes. Dazu werden zwei Listen
+von Handler betrachtet. Als erstes wird das Paket an alle Handler übergeben,
+welche alle Pakete empfangen. Dazu zählt auch der \texttt{PF\_PACKET} Socket
+von tcpdump/libpcap. Anschließend werden spezielle Handler für das Paket
+aufgerufen. In dem Fall eines TCP Paketes ist dies der IP Handler, welcher den
+IP Header liest, auswertet und entfernt.  Anschließend wird das Paket an den
+TCP Handler übergeben. Dieser wertet den TCP Header aus und reicht das Paket an
+den zuständigen Socket weiter. Wenn ein Paket einen Socket erreicht wird es in
+dessen Eingangsbuffer (3) abgelegt.
+
+Wie in Abbildung~\ref{fig:network-stack} zu sehen ist, gibt es mindestens drei
+Paketbuffer die ein Paket durchläuft. Wenn einer dieser Buffer voll ist, weil
+bereits zu viele Paket angenommen aber nicht verarbeitet wurden, wir ein neues
+Paket verworfen. Unter der Fragestellung unter welchen Umständen tcpdump Pakete
+verwirft, welcher allerdings die Anwendung (nginx) erreichen, sind die ersten
+beiden Buffer (NIC und CPU Queue) nicht interessant. Ein Paket, welches bereits
+an dieser Stelle verworfen wird, erreicht weder die Anwendung noch tcpdump.
+Insofern ist nur der dritte Buffer vom Socket interessant. An dieser Stelle hat
+das Paket bereits zwei unterschiedliche Wege durchlaufen. Dabei muss die Anzahl
+der Paket in beiden Sockets nicht identisch sein, da der \texttt{PF\_PACKET}
+generell alle Pakete erhält. Dies bedeutet, wenn neben dem HTTP Verkehr noch
+weiterer Netzwerkverkehr existiert wird dieser ebenfalls an den tcpdump/libpcap
+Socket weitergeleitet.
+
+Daher ist es nötig diesen Traffic möglichst frühzeitig zu filtern. Eine
+Filterung im Userspace würde das Problem nicht beheben, da immer noch alle
+Pakete erst einmal den Socket erreichen. Linux stellt für diese Zweck den Linux
+Socket
+Filter\footnote{\url{https://www.kernel.org/doc/Documentation/networking/filter.txt}}
+(LSF) bereit. Diese API wurde mit Kernel 2.2 einführt und ermöglicht es ein Filter
+an einem Socket zu registrieren (siehe Listing~\ref{lst:attach}).
+
+\begin{lstlisting}[caption={Anhängen eines Filters an eine Socket},label=lst:attach]
+setsockopt(socket, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter));
+\end{lstlisting}
+
+Der Filter ist ein Programm in der Assembler ähnlichen Sprache Berkley Paket
+Filter (BPF)~\cite{DBLP:conf/usenix/McCanneJ93}. Die Sprache umfasst einfache
+Vergleich- und Rechenoperation und arbeitet direkt auf den Daten des
+Netzwerkpaketes. Dadurch kann der Filter direkt auf einzelne Header Felder
+der verschieden Protokolle zugreifen.\ tcpdump/libpcap erlaubt es logische
+Ausdrücke zum erstellen eines Filters in BPF umzuwandeln. Das Beispiel
+in Listing~\ref{lst:filter} zeigt den BPF Code für einen Filter der alle
+TCP Pakete für die Ziel-IP \texttt{10.3.9.21} und Ziel-Port \texttt{80} akzeptiert.
+
+\begin{lstlisting}[numbers=none,caption={BPF for \texttt{tcpdump -d ip dst host 10.3.9.21 and tcp dst port 80}},label={lst:filter}]
+(000) ldh      [12]
+(001) jeq      #0x800           jt 2    jf 12
+(002) ld       [30]
+(003) jeq      #0xa030915       jt 4    jf 12
+(004) ldb      [23]
+(005) jeq      #0x6             jt 6    jf 12
+(006) ldh      [20]
+(007) jset     #0x1fff          jt 12   jf 8
+(008) ldxb     4*([14]&0xf)
+(009) ldh      [x + 16]
+(010) jeq      #0x50            jt 11   jf 12
+(011) ret      #65535
+(012) ret      #0
+\end{lstlisting}
+
+Das BPF Programm lädt Daten aus dem Netzwerkpaket und vergleicht diese mit dem
+festgelegten Filter. Zuerst wird der EtherType aus dem Ethernet Header geladen
+(000) und verglichen ob es sich um ein IPv4 Paket (Type: 0x0800) handelt (001).
+Ist der Vergleich erfolgreich wird mit der nächsten Instruktion fortgefahren,
+ansonsten wird zu letzten Instruktion (012) gesprungen. Als zweites wird die
+Ziel-Adresse aus dem IP Header geladen (003) und mit der IP 10.3.9.21
+(0xa030915) verglichen (004). Danach wird das Protokolfeld des IP Headers
+geladen (004) und überprüft, dass es sich um ein TCP Paket (0x6) handelt (005).
+In der folgende Instruktion wird sichergestellt, dass das IP Paket nicht
+fragmentiert wurde oder es sich um das erste Fragment handelt, also der IP
+Fragment Offset 0 ist (007). Anschließend wird die IP Headerlänge im
+Hilfsregister X gespeichert (008), dies ist nötig, da der IP Header durch
+Optionen eine variable Länge besitzt. Ein Zugriff auf den TCP Header ist nur
+mit dieser Information möglich. Als letztes wird der Ziel-Port aus dem TCP
+Header geladen (009) und mit Port 80 (0x50) verglichen (010). Wenn alle diese
+Tests erfolgreich waren wird mit Instruktion (011) das Paket akzeptiert.
+Ansonsten wird das Paket mit Instruktion (012) abgelehnt. Das BPF Programm gibt
+die Anzahl der Bytes zurück, welche von dem Paket weitergeleitet werden sollen.
+In libpcap ist der Standard dafür 65535 Bytes (siehe Instruktion 011), welches
+die maximale Größe eines IP Paketes entspricht. Der Rückgabewert 0 gibt an
+das kein Byte des Paketes weitergegeben werden soll (012).
+
+Ist ein Filter für einen Socket registriert, wird dieser vom Handler durch die Kernel
+Funktion \texttt{sk\_run\_filter} ausgeführt, bevor
+das Paket an den Socket übergeben wird. Dadurch kann die Anzahl der Paket,
+welche den tcpdump/libpcap Socket erreichen effizient reduziert werden.
+
+Der tcpdump/libpcap Socket Buffer wird als Memory Mapped Packet Ring
+Buffer\footnote{\url{https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt}}
+angelegt. Dies ermöglicht es effizienter auf Paket im Userspace zu zugreifen.
+Dies verhindert, dass jedes Paket einzeln durch einen \texttt{recv} Aufruf
+empfangen werden muss.  Die Größe des Buffers ist standardmäßig 2~MB\@. Der
+Buffer wird in Frames aufgeteilt, welche es ermöglichen das aufgezeichnete
+Paket und Metadaten zu speichern. Dabei richtet sich die Framegröße nach der
+Anzahl der Bytes die pro Paket aufgezeichnet werden.
+
+Es zeigt sich, dass es mindestens drei Merkmale gibt, welche beeinflussen wieviel
+Paket tcpdump/libpcap aufzeichnen kann. Dies ist zu erst der Filter welcher
+möglichst viele Paket bereits im Kernel verwerfen sollte. Anschließend die
+Anzahl der Bytes die pro gefiltertem Paket weitergegeben werden und die
+Buffergröße die verwendet wird um die Paket vorzuhalten. Die Auswirkung
+dieser Aspekte soll in dieser Arbeit mit Hilfe von Messungen untersucht werden.
+Außerdem ist bereits aus Abbildung~\ref{fig:network-stack} ersichtlich das die
+Ausführung von tcpdump eine Auswirkung auf andere Services hat, da jedes Paket
+nun von einem zusätzlichen Handler betrachtet und gefiltert wird. Daher hat die
+Komplexität und Effektivität des tcpdump Filters einen direkten Einfluss auf
+die Geschwindigkeit mit der Paket verarbeitet werden.

@@ -1,0 +1,33 @@
+set terminal postscript eps size 3, 3 enhanced color
+set samples 1001  # high quality
+set border 31 linewidth .3 # thin border
+
+set grid ytics mytics
+set boxwidth 0.5 relative
+set style fill transparent solid 0.7 noborder
+set yrange [0:]
+set mytics 2
+
+set output "requests.eps"
+set ylabel "Median HTTP Requests (x10^6)"
+set xrange [-1:6]
+set xtics nomirror ('no' 0, 'default' 1, 'snaplen' 2, 'buffer' 3, 'snaplen+buffer' 4, 'filter' 5) rotate by 45 right
+
+plot  "requests.data" using 0:2 w boxes lc rgb"dark-green" notitle
+
+
+set output "dropped.eps"
+set ylabel "Median Pakets Dropped (x10^3)"
+set xrange [-1:5]
+
+set xtics nomirror ('default' 0, 'snaplen' 1, 'buffer' 2, 'snaplen+buffer' 3, 'filter' 4) rotate by 45 right
+
+plot  "drops.data" using 0:3 w boxes lc rgb"dark-green" notitle
+
+set output "dropped-percentage.eps"
+set ylabel "Median Pakets Dropped/Filtered (in %)"
+set xrange [-1:5]
+
+set xtics nomirror ('default' 0, 'snaplen' 1, 'buffer' 2, 'snaplen+buffer' 3, 'filter' 4) rotate by 45 right
+
+plot  "drops.data" using 0:4 w boxes lc rgb"dark-green" notitle

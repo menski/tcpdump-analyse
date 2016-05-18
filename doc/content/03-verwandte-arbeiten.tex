@@ -1,0 +1,43 @@
+\section{Verwandte Arbeiten}
+\label{sec:verwandte-arbeiten}
+
+In \cite{schneider05da,DBLP:conf/conext/SchneiderW05} wurde untersucht ob sich
+nicht spezialisierte Hardware zum Aufzeichnen von Paketen in Gigabit Netzwerken
+eignet. Es wurden 4 verschieden Systeme verglichen, welche sich nur in der
+verwendeten CPU und dem Betriebssystem unterschieden. Als CPUs wurden AMD
+Opteron und Intel Xeon verwendet. Die Betriebssysteme waren Linux 2.6.11 und
+FreeBSD 5.4. In den Messungen wurde der Linux Kernel Package Generator
+\cite{DBLP:journals/comcom/TurullSO16} genutzt um UDP Pakete zu generieren. Die
+Paketgrößen wurde anhand einer Verteilung generiert, welche aus einer 24h
+Aufzeichnung abgeleitet wurde. Die Ergebnisse der Experimente zeigten, dass mit
+steigender Paketrate die CPU Auslastung und der Paketverlust bei der
+Aufzeichnung steigt. Außerdem zeigte sich das die Kombination aus FreeBSD und
+AMD Opteron den geringsten Paketverlust aufzeigte. In einer anknüpfenden Arbeit
+\cite{DBLP:conf/pam/SchneiderWF07} wurden Ansätze beschrieben wie man höhere
+Netzwerkarten wie 10-Gigabit Ethernet auf mehrere 1-Gigabit Interfaces
+verteilen kann. Dadurch kann der erhöhte Netzwerkverkehr immer noch effizient
+aufgezeichnet werden.
+
+Den Einfluss von tcpdump auf die Leistung eines parallel laufenden Dienstes,
+wie zum Beispiel einem Webserver, wurde in \cite{DBLP:conf/globecom/ChenCCM11}
+untersucht. Es zeigte sich eine starke Beeinträchtigung, wenn sich
+tcpdump und der Webserver eine CPU geteilt haben. Allerdings war auch bei
+getrennten CPUs die Leistung des Webservers beeinträchtigt.
+
+Technologien wie Intel Data Plane Development
+Kit\footnote{\url{http://dpdk.org/}} (DPDK) and
+WireCAP\footnote{\url{http://wirecap.fnal.gov/}} \cite{DBLP:conf/imc/WuD14}
+untersuchen neue Ansätze um die Paketverarbeitung und -aufzeichnung zu
+optimieren.  Dabei stehen Multi-Core Unterstützung und optimierte
+Speicherverwaltung im Vordergrund.  Dabei können in Hochlastszenarien
+Verbesserungen zu normalen libpcap Anwendungen erzielt werden.
+
+Die existierende Literatur zeigt, dass das Problem des Paketverlustes bei
+der Aufzeichnung von Netwerkverkehr unter hoher Last ein bekanntes Problem
+ist. Dabei haben viele Faktoren einen Einfluss auf die Paketaufzeichnung. Dies
+umfasst die verwendete Hardware, wie Netzwerkkarten, CPU und Festplatten, aber
+auch das verwendete Betriebssystem und Software. Da diese Arbeit sich explizit
+mit tcpdump/libpcap auf einem gegeben System befasst, wird im folgenden Kapitel
+ein Konzept vorgestellt um die Auswirkungen der in Kapitel \ref{sec:grundlagen}
+vorgestellten Aspekte von tcpdump/libpcap zu untersuchen.
+

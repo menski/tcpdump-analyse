@@ -1,0 +1,130 @@
+%% $Id: preamble-commands.tex 20694 2010-09-21 18:47:18Z menski $
+
+\usepackage{xspace}
+\usepackage{ifthen}
+\usepackage{ifpdf}
+
+\makeatletter
+
+\providecommand{\IfPackageLoaded}[2]{\@ifpackageloaded{#1}{#2}{}}
+\providecommand{\IfPackageNotLoaded}[2]{\@ifpackageloaded{#1}{}{#2}}
+\providecommand{\IfElsePackageLoaded}[3]{\@ifpackageloaded{#1}{#2}{#3}}
+
+\def \mail {}
+\newcommand{\email}[1]{\def \mail {#1}}
+
+\@ifundefined{frontmatter}{%
+   \newcommand{\frontmatter}{%
+      %In Roemischen Buchstaben nummerieren (i, ii, iii)
+      \pagenumbering{roman}
+   }
+}{}
+\@ifundefined{mainmatter}{%
+   % scrpage2 benoetigt den folgenden switch
+   % wenn \mainmatter definiert ist.
+   \newif\if@mainmatter\@mainmattertrue
+   \newcommand{\mainmatter}{%
+      % -- Seitennummerierung auf Arabische Zahlen zuruecksetzen (1,2,3)
+      \pagestyle{fancy}%%
+      \pagenumbering{arabic}%%
+   }
+}{}
+\@ifundefined{backmatter}{%
+   \newcommand{\backmatter}{
+      %In Roemischen Buchstaben nummerieren (i, ii, iii)
+      \pagenumbering{Roman}
+   }
+}{}
+
+% \def\thickhrulefill{\leavevmode \leaders \hrule height 1pt\hfill \kern \z@}
+% \renewcommand{\maketitle}{\begin{titlepage}%
+%     \let\footnotesize\small
+%     \let\footnoterule\relax
+    % \parindent \z@
+    % \reset@font
+    % \null
+    % \vskip 10\p@
+    % \hbox{\mbox{%
+    %     \hspace{4pt}%
+      %   		\includegraphics[width=7em]{images/uni-logo}%
+      %   \hspace{4pt}
+      %   }%
+      % \vrule depth 0.80\textheight%
+      % \mbox{\hspace{2em}}
+      % \vtop{% %%%%%%%%%%%%%%%%%%
+      %   \vskip 20\p@
+        % \begin{flushleft}
+        %   \Huge \bfseries \@title \par
+        % \end{flushleft}
+        % \vskip 60\p@
+        % \begin{flushleft}
+        %   \LARGE BACHELORARBEIT \par 
+        %   \vskip 5\p@
+        %   \large zur Erlangung des akademischen Grades\\\Large\textit{Bachelor of Science}\\\large im Studiengang Informatik \par
+        %   \vskip 5\p@
+        %   \LARGE \@author \par
+        %   \vskip 1\p@
+        %   \large \mail \par
+        % \end{flushleft}
+	% 	\vskip 90\p@
+        % \begin{flushleft}
+        %   \large \@publishers \par
+        % \end{flushleft}
+        % \vskip 30\p@
+        % \begin{flushleft}
+        %   \large \@date \par
+    %     \end{flushleft}
+    %     \vfil
+    %     }}        
+    % \null
+%   \end{titlepage}%
+%   \setcounter{footnote}{0}%
+% }
+
+%\def\thickhrulefill{\leavevmode \leaders \hrule height 1pt\hfill \kern \z@}
+%\renewcommand{\maketitle}{\begin{titlepage}%
+%    \let\footnotesize\small
+%    \let\footnoterule\relax
+%    \parindent \z@
+%    \reset@font
+%    \null
+%    \vskip 10\p@
+%    \hbox{\mbox{%
+%        \hspace{4pt}%
+%			\includegraphics[width=7em]{images/uni-logo}%
+%        \hspace{4pt}
+%        }%
+%      \vrule depth 0.80\textheight%
+%      \mbox{\hspace{2em}}
+%      \vtop{% %%%%%%%%%%%%%%%%%%
+%        \vskip 20\p@
+%        \begin{flushleft}
+%          \Huge \bfseries \@title \par
+%          \LARGE \bfseries \@subtitle \par
+%        \end{flushleft}
+%        \vskip 60\p@
+%        \begin{flushleft}
+%          \LARGE Bachelor Thesis \par 
+%          \vskip 5\p@
+%          \large by \par
+%          \vskip 5\p@
+%          \LARGE \@author \par
+%          \vskip 1\p@
+%          \large \mail \par
+%        \end{flushleft}
+%		\vskip 120\p@
+%        \begin{flushleft}
+%          \large \@publishers \par
+%        \end{flushleft}
+%        \vskip 30\p@
+%        \begin{flushleft}
+%          \large \@date \par
+%        \end{flushleft}
+%        \vfil
+%        }}        
+%    \null
+%  \end{titlepage}%
+%  \setcounter{footnote}{0}%
+%}
+
+\makeatother

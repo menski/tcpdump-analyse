@@ -1,0 +1,8 @@
+Running 5m test @ http://ib6
+  4 threads and 1024 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    12.82ms   48.09ms   1.05s    95.59%
+    Req/Sec    78.88k    11.64k  126.63k    71.53%
+  94197335 requests in 5.00m, 9.65GB read
+Requests/sec: 313920.03
+Transfer/sec:     32.92MB

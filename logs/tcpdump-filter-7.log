@@ -1,0 +1,15 @@
+tcpdump: listening on eth1, link-type EN10MB (Ethernet), capture size 142 bytes
+94219772 packets captured
+94222585 packets received by filter
+2806 packets dropped by kernel
+netoff: 320
+maclen: 256
+macoff: 64
+frame size: 142
+frame size: 208
+TPACKET_HDRLEN: 52
+TPACKET_ALIGNMENT: 16
+block size: 4096
+block nr: 1061
+frame size: 208
+frame nr: 20159

@@ -1,0 +1,29 @@
+\section{Einleitung}
+\label{sec:einleitung}
+
+Diese Arbeit untersucht ob tcpdump\footnote{\url{http://www.tcpdump.org/}} zum
+Monitoren von HTTP Traffic in einem Hochlastszenario geeignet ist. Der Use
+Case ist, dass tcpdump dazu eingesetzt werden soll HTTP Traffic zu überwachen
+und zu analysieren. Anhand der gewonnen Daten sollen Entscheidungen getroffen
+werden um eine Lastverteilungsinfrastruktur zu steuern. Um dies sinnvoll
+einzusetzen muss sichergestellt werden, dass das Monitoring alle oder
+mindestens den größten Teil der HTTP Requests aufzeichnen kann.
+
+Um in diesem Kontext tcpdump zu evaluieren wird diese Arbeit zuerst die
+Grundlagen von tcpdump im Kapitel \ref{sec:grundlagen} erklärt. Dabei wird
+gezeigt wie tcpdump Pakete filtert und wo es dort zu Paketverlusten kommen
+kann. Anschließend werden in Kapitel \ref{sec:verwandte-arbeiten} Arbeiten
+aufgeführt die sich bereits mit der Performance von tcpdump beschäftigt haben.
+Das Kapitel \ref{sec:konzept} beschreibt dann den Versuchsaufbau für diese Arbeit
+und was dabei die erwarteten Beobachtungen sind. Die Messergebnisse der
+Experimente werden in Kapitel \ref{sec:messungen} vorgestellt und ausgewertet.
+Das letzte Kapitel \ref{sec:zusammenfassung} gibt eine Zusammenfassung der
+Ergebnisse dieser Arbeit und eine Einschätzung ob tcpdump in dem beschrieben
+Use Case sinnvoll eingesetzt werden kann.
+
+Die Beschreibungen und Messungen in dieser Arbeiten basieren alle auf der tcpdump
+Version 4.3.0 und der dazu gehörigen libpcap Version 1.3.0. Das Betriebssystem
+auf dem tcpdump lief war Centos 5 mit einem Kernel der Version 2.6.18.
+
+Diese Arbeit befasst sich nur mit der Paketaufzeichnung und nicht mit der
+Weiterverarbeitung und Auswertung der aufgezeichneten Daten.

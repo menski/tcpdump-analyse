@@ -1,0 +1,135 @@
+\section{Konzept}
+\label{sec:konzept}
+
+Um die Leistung von tcpdump zur Aufzeichnung von HTTP Traffic zu zeigen wurden
+im Rahmen dieser Arbeit mehrere Messungen vorgenommen. Dieses Kapitel beschreibt
+das Konzept und den Aufbau dieser Messungen. Und begründet die Entscheidungen
+bezüglich der einzelne Komponenten.
+
+Für die Messung standen zwei identische Systeme \texttt{ib5} und \texttt{ib6}
+zur Verfügung. Dabei wurde \texttt{ib5} als Benchmark Client und \texttt{ib6}
+als System unter Last (SUT) genutzt.
+
+\begin{description}
+\item [ib5/ib6] \hfill
+\begin{description}
+\item [CPU] Quad Core Intel Xeon 2.27 GHz
+\item [RAM] 6 GB
+\item [OS] CentOS 5.8
+\item [Kernel] 2.6.18-308.el5
+\item [NIC Treiber] bnx2 2.1.11
+\end{description}
+\end{description}
+
+Als HTTP Benchmark wurde \texttt{wrk}\footnote{\url{https://github.com/wg/wrk}}
+Version 4.0.2 auf \texttt{ib5} genutzt. Dieser Benchmark nutzt Multithreading
+und Event Loops um eine möglichst hohe Anzahl an HTTP Requests an das SUT zu
+schicken. Auf \texttt{ib6} wurde
+\texttt{nginx}\footnote{\url{http://nginx.org/}} Version 1.9.15 als HTTP Server
+eingesetzt. Zur Aufzeichnung der Netzwerkpakete wurde
+\texttt{tcpdump}\footnote{\url{http://www.tcpdump.org/}} Version 4.3.0 und
+\texttt{libpcap} Version 1.3.0 verwendet.
+
+Ziel des Messaufbau war es eine möglichst hohe Anzahl an HTTP Requests zu
+erzeugen um eine hohe Last auf tcpdump zu generieren. Um dies zu erreichen
+wurden minimal HTTP Requests und Responses genutzt. Dazu wurde nginx so
+konfiguriert das es auf einen HTTP GET Requests direkt mit einem 204 No Content
+Response antwortet (siehe Listing~\ref{lst:nginx} in
+Anhang~\ref{sec:konfigurationen}).  Dies entspricht zwar keinem realen
+Szenario, allerdings kann eine reale Überlastsituation nicht mit der vorhanden
+Hardware simuliert werden. Es ist jedoch vorstellbar das die Anzahl der Pakete
+die durch diese Vereinfachung versendet wurden in einem realen Lastszenario
+erreicht werden können. Und eine geringere Last keine Probleme für tcpdump
+dargestellt hätten.
+
+\begin{lstlisting}[caption={Aufruf von wrk},label=lst:wrk]
+wrk -t 4 -c 1024 -d 5m http://ib6
+\end{lstlisting}
+
+\begin{table}
+  \centering
+  \bgroup
+  \def\arraystretch{1.3}
+  \begin{tabular}{ccccp{7.6cm}}
+      & \textbf{Name} & \textbf{snaplen} & \textbf{buffer} & \textbf{filter} \\\hline\hline
+      1 & no & \multicolumn{3}{c}{---} \\\hline
+      2 & default & 65535 & 2048 & ip dst host 172.16.0.26 and tcp dst port 80 \\\hline
+      3 & snaplen & 142 & 2048 & ip dst host 172.16.0.26 and tcp dst port 80 \\\hline
+      4 & buffer  & 65535 & 4096 & ip dst host 172.16.0.26 and tcp dst port 80 \\\hline
+      5 & snaplen+buffer & 142 & 4096 & ip dst host 172.16.0.26 and tcp dst port 80 \\\hline
+      6 & filter  & 142 & 4096 & ip dst host 172.16.0.26 and tcp dst port 80 and \\
+        &      & & & 'tcp[((tcp[12:1] \& 0xf0) >> 2):4] = 0x47455420' \\
+  \end{tabular}
+  \egroup
+  \caption{Konfiguration von tcpdump für Messszenarien}\label{tab:szenarien}
+\end{table}
+
+Um die in Kapitel~\ref{sec:grundlagen} aufgeführten Einstellungen von tcpdump
+zu untersuchen wurde insgesamt 6 Messreihen durchgeführt. Es wurde Untersucht
+wie sich tcpdump allgemein auf die Performance des Webservers auswirkt. Und wie
+sich die Parameter Größe der aufgezeichneten Pakete (snaplen), Größte des
+Paketbuffers (buffer) und der verwendete Paketfilter (filter) auf tcpdump
+auswirken. Bei allen Messungen war die nginx Konfiguration gleich (siehe
+Listing~\ref{lst:nginx} in Anhang~\ref{sec:konfigurationen}).  Ebenfalls
+wurde wrk immer wie in Listing~\ref{lst:wrk} gezeigt aufgerufen. Jede Messung
+war 5 Minuten lang und benutzt 4 Threads und 1024 Verbindungen. Die
+Konfiguration von tcpdump wurde für jede Messung angepasst (siehe
+Tabelle~\ref{tab:szenarien}). Im Folgenden sollen die einzelnen Szenarien
+beschrieben werden.
+
+\paragraph{no} Die erste Messreihe ist eine Kontrollmessung ohne tcpdump. Diese
+Messung soll die maximale Anzahl der Requests in der Messumgebung ermitteln.
+Anhand dieser Messung können dann Aussagen über den Einfluss von tcpdump auf
+die Leistung des HTTP Servers getroffen werden.
+
+\paragraph{default} Bei dieser Messungen wurde die Standardparameter von tcpdump
+verwendet. Dabei ist die snaplen 65535 Bytes und der buffer 2048 KBytes. Der Filter
+beschreibt alle TCP Pakete für die Ziel-Adresse \texttt{172.16.0.26} und dem Ziel-Port
+\texttt{80}. Dies umfasst alle eingehenden TCP Pakete für den Webserver.
+
+\paragraph{snaplen} In diesem Szenario wurden die snaplen auf 142 Bytes
+reduziert. Die ersten 142 Bytes eines TCP Paketes reichen aus um zu analysieren
+ob es sich um ein HTTP Paket handelt.  Dabei ergibt sich 142 Bytes aus der Mac
+Header Größe (14 Bytes), der maximalen IP Header Größe (60 Bytes), der
+maximalen TCP Header Größe (60 Bytes) und den ersten 8 Bytes der TCP Payload
+(HTTP Methode). Diese Aufzeichnungsgröße ist ausreichend um zu analysieren
+wieviel HTTP Pakete den Webserver erreichen, was dem untersuchten Use Case
+entspricht. Da für den IP und TCP Header die maximalen Größen angenommen
+wurden, werden vermutlich die meisten aufgezeichneten Pakete noch weitere
+Informationen wie den Request Pfad enthalten.
+
+\paragraph{buffer} In diesem Szenario wurde die Buffergröße auf 4096 Bytes
+verdoppelt, dies sollte es tcpdump ermöglichen mehr Pakete für die
+Weiterverarbeitung vorzuhalten.
+
+\paragraph{snaplen+buffer} Diese Szenario kombiniert die Szenarien
+\texttt{snaplen} und \texttt{buffer} um die Anzahl der Pakete welche in den
+tpcdump Buffer passen zu maximieren.
+
+\paragraph{filter} Das letzte Szenario soll die Auswirkung des gewählten
+Filters untersuchen. Dazu wurde der Filter noch einmal verfeinert. Der Filter
+für Ziel-IP und Ziel-Port akzeptiert sowohl HTTP Requests als auch TCP Pakete
+welche zum Verbingungsaufbau und -abbau gesendet werden. Um diese bereits im
+Kernel herauszufiltern wurde der Filter um den Ausdruck \texttt{tcp[((tcp[12:1]
+\& 0xf0) >> 2):4] = 0x47455420} erweitert. Dieser Filter testet ob die ersten 4
+Bytes der TCP Payload \glqq{}\texttt{GET }\grqq{} entsprechen.  Der
+Filter akzeptiert also nur Pakete die GET HTTP Requests sind. Außerdem wurden
+die snaplen und buffer Größe vom \texttt{snaplen+buffer} Szenario übernommen.
+
+Jede Messung wurde 7 mal wiederholt. Dabei wurden die Ausgaben von
+wrk und tcpdump aufgezeichnet und ausgewertet. Die folgenden Metriken
+wurden dann untersucht:
+
+\begin{enumerate}
+\item Anzahl der gesendeten HTTP Requests (wrk)
+\item Anzahl der gefilterten Netzwerkpakete (tcpdump)
+\item Anzahl der verlorenen Netzwerkpakete (tcpdump)
+\end{enumerate}
+
+Es wurde erwartet, dass anhand der Ergebnisse gezeigt werden kann, dass tcpdump
+eine Auswirkung auf die Anzahl der gesendeten HTTP Requests hat. Außerdem
+das es bereits in diesem einfach Messaufbau mit nur einem Client zu Paketverlusten
+kommt. Diese jedoch durch eine Anpassung der tcpdump Parameter snaplen und buffer
+reduziert werden können. Weiterhin ist die Vermutung, dass ein sehr spezifischer
+Filter eine weitere Verbesserung ermöglicht. Das folgende Kapitel~\ref{sec:messungen}
+beschreibt die Ergebnisse der einzelnen Messungen und wertet diese aus.

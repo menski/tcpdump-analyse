@@ -1,0 +1,77 @@
+\documentclass[
+	paper=a4,
+	fontsize=11pt,
+]{scrartcl}
+
+% Sprache
+\usepackage[%
+%english,
+ngerman
+]{babel}
+\usepackage[%
+plain,
+%english,
+german
+]{fancyref}
+\usepackage{setspace}
+
+\usepackage{bibgerm}
+
+% preamble
+\input{preamble/settings}
+\input{preamble/preamble}
+\input{preamble/titlepage}
+
+% macros
+\input{macros/new-commands}
+
+\hypersetup{
+  pdfauthor = {Sebastian Menski},
+  pdftitle = {\BATitle},
+}
+
+\begin{document}
+%% FRONTMATTER
+\frontmatter
+\maketitle
+\clearpage
+
+\tableofcontents
+%\listoftodos
+%% MAINMATTER
+\clearpage
+\mainmatter
+\onehalfspacing
+\input{content/01-einleitung}
+\clearpage
+\input{content/02-grundlagen}
+\clearpage
+\input{content/03-verwandte-arbeiten}
+\clearpage
+\input{content/04-konzept}
+\clearpage
+\input{content/05-messungen}
+\clearpage
+\input{content/06-zusammenfassung}
+\clearpage
+
+%% BACKMATTER
+\clearpage
+\backmatter
+% biblography
+\nocite{*}
+%\bibliographystyle{siam}
+\bibliographystyle{gerplain}
+\bibliography{bib/references}
+\clearpage
+% appendix
+\appendix
+\input{content/07-appendix}
+
+%\listoftables
+%\listoffigures
+%\listofalgorithms
+
+
+
+\end{document}
